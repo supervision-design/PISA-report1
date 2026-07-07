@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>รายงานผลกิจกรรม PISA — สพป.เชียงใหม่ เขต 2</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Chonburi&family=Sarabun:wght@400;500;600;700&display=swap');
+
+  :root {
+    --ink: #1f2937;
+    --paper: #FAF7F0;
+    --moss: #4C6B4F;
+    --moss-dark: #365038;
+    --clay: #C1622D;
+    --gold: #D6A340;
+    --line: #E3DCC9;
+    --card: #FFFFFF;
+  }
+  * { box-sizing: border-box; }
+  body { font-family: 'Sarabun', sans-serif; background: var(--paper); color: var(--ink); margin: 0; }
+  .app { max-width: 1100px; margin: 0 auto; padding: 28px 20px 60px; }
+
+  .header { text-align: center; margin-bottom: 20px; }
+  .header h1 {
+    font-family: 'Chonburi', cursive; font-size: 24px; color: var(--moss-dark);
+    margin: 0 0 6px 0; font-weight: 400; line-height: 1.5;
+  }
+  .header p { margin: 0; color: #6b7280; font-size: 13.5px; }
+
+  /* Tabs */
+  .tabs {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    margin-bottom: 24px;
+    border-bottom: 2px solid var(--line);
+    padding-bottom: 0;
+  }
+  .tab-btn {
+    padding: 12px 28px;
+    border: none;
+    background: none;
+    font-family: 'Sarabun', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    color: #9ca3af;
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    margin-bottom: -2px;
+  }
+  .tab-btn.active { color: var(--moss-dark); border-bottom-color: var(--moss); }
+  .tab-btn:hover:not(.active) { color: var(--ink); }
+
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* ---- Upload tab ---- */
+  .upload-wrap { max-width: 640px; margin: 0 auto; }
+  .card {
+    background: var(--card); border: 1px solid var(--line);
+    border-radius: 14px; padding: 22px;
+  }
+  label.field-label { display: block; font-weight: 600; font-size: 13.5px; margin-bottom: 6px; }
+  select {
+    width: 100%; padding: 11px 12px; border: 1px solid var(--line); border-radius: 8px;
+    font-family: 'Sarabun', sans-serif; font-size: 14px; background: var(--paper); margin-bottom: 18px;
+  }
+  select:focus { outline: 2px solid var(--gold); border-color: transparent; }
+
+  .slot-row { display: flex; gap: 12px; margin-bottom: 18px; }
+  .slot-block { flex: 1; }
+  .slot-label { font-size: 12.5px; font-weight: 700; color: var(--moss-dark); text-align: center; margin-bottom: 6px; }
+
+  .upload-zone {
+    display: block; border: 2px dashed var(--line); border-radius: 10px;
+    padding: 20px 10px; text-align: center; cursor: pointer; font-size: 13px; color: #6b7280;
+  }
+  .upload-zone:hover { border-color: var(--gold); background: #FFFCF5; }
+
+  .preview-item { position: relative; }
+  .preview-item img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 8px; display: block; }
+  .remove-x {
+    position: absolute; top: -6px; right: -6px; width: 22px; height: 22px; border-radius: 50%;
+    background: var(--clay); color: white; border: none; font-size: 13px; cursor: pointer; line-height: 1;
+  }
+
+  .btn-primary {
+    width: 100%; background: var(--moss); color: white; padding: 13px; border-radius: 9px;
+    border: none; font-weight: 700; font-size: 15px; cursor: pointer; font-family: 'Sarabun', sans-serif;
+  }
+  .btn-primary:hover { background: var(--moss-dark); }
+  .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  .status-msg { margin-top: 14px; padding: 12px 14px; border-radius: 8px; font-size: 13.5px; text-align: center; }
+  .status-msg.success { background: #E7F0E4; color: var(--moss-dark); }
+  .status-msg.error { background: #FBE9E1; color: var(--clay); }
+  .status-msg.loading { background: #F3F1EA; color: #6b7280; }
+
+  .existing-note {
+    font-size: 12.5px; color: var(--moss-dark); background: #E7F0E4;
+    padding: 8px 12px; border-radius: 8px; margin-bottom: 14px;
+  }
+
+  /* ---- Dashboard tab ---- */
+  .stats { display: flex; gap: 10px; justify-content: center; margin-bottom: 18px; flex-wrap: wrap; }
+  .stat { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 10px 18px; text-align: center; min-width: 76px; }
+  .stat .num { font-size: 22px; font-weight: 700; font-family: 'Chonburi', cursive; }
+  .stat .lbl { font-size: 11px; color: #6b7280; }
+  .stat.sent .num { color: var(--moss); }
+  .stat.pending .num { color: var(--clay); }
+
+  .progress-bar-wrap { background: var(--line); border-radius: 6px; height: 8px; margin-bottom: 20px; overflow: hidden; }
+  .progress-bar { height: 100%; background: linear-gradient(90deg, var(--moss), var(--gold)); transition: width 0.4s ease; }
+
+  .deadline-banner {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 16px; border-radius: 12px; padding: 14px 20px; margin-bottom: 20px;
+    flex-wrap: wrap; border: 1px solid var(--line);
+  }
+  .deadline-banner.ok { background: #EEF4EC; border-color: #cfe0ca; }
+  .deadline-banner.warn { background: #FDF3E4; border-color: #f0d9a8; }
+  .deadline-banner.urgent { background: #FCE9E5; border-color: #f0c2b8; }
+  .deadline-banner.done { background: #EAE6DC; border-color: var(--line); }
+  .deadline-left { display: flex; flex-direction: column; gap: 2px; }
+  .deadline-title { font-weight: 700; font-size: 14px; }
+  .deadline-date { font-size: 12.5px; color: #6b7280; }
+  .deadline-count { font-family: 'Chonburi', cursive; font-size: 30px; text-align: center; line-height: 1; }
+  .deadline-count .unit { font-family: 'Sarabun', sans-serif; font-size: 12px; font-weight: 600; display: block; margin-top: 2px; }
+  .ok .deadline-count { color: var(--moss-dark); }
+  .warn .deadline-count { color: #B8791F; }
+  .urgent .deadline-count { color: var(--clay); }
+  .done .deadline-count { color: #6b7280; }
+
+  .toolbar { display: flex; gap: 10px; margin-bottom: 18px; flex-wrap: wrap; align-items: center; }
+  .search { flex: 1; min-width: 200px; padding: 10px 14px; border: 1px solid var(--line); border-radius: 8px; font-family: 'Sarabun', sans-serif; font-size: 14px; background: var(--card); }
+  .search:focus { outline: 2px solid var(--gold); border-color: transparent; }
+  .filter-btn { padding: 9px 16px; border-radius: 8px; border: 1px solid var(--line); background: var(--card); font-family: 'Sarabun', sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; color: #6b7280; }
+  .filter-btn.active { background: var(--moss); color: white; border-color: var(--moss); }
+  .filter-btn.active.pending-active { background: var(--clay); border-color: var(--clay); }
+
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; }
+  .grid-card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 16px; display: flex; flex-direction: column; gap: 10px; }
+  .card-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
+  .school-name { font-weight: 600; font-size: 14.5px; line-height: 1.4; }
+  .badge { flex-shrink: 0; font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 20px; white-space: nowrap; }
+  .badge.sent { background: #E7F0E4; color: var(--moss-dark); }
+  .badge.pending { background: #FBE9E1; color: var(--clay); }
+
+  .thumbs-single img, .thumbs-single .thumb-slot { width: 100%; aspect-ratio: 16/10; border-radius: 6px; object-fit: cover; }
+  .thumb-slot { background: var(--paper); border: 1px dashed var(--line); }
+  .thumbs-double { display: flex; gap: 8px; }
+  .thumb-col { flex: 1; display: flex; flex-direction: column; gap: 4px; }
+  .thumb-double img, .thumb-double.thumb-slot { width: 100%; aspect-ratio: 1; border-radius: 6px; object-fit: cover; }
+  .thumb-label { text-align: center; font-size: 10.5px; color: #6b7280; font-weight: 600; }
+
+  .lightbox { position: fixed; inset: 0; background: rgba(20,20,20,0.9); display: flex; align-items: center; justify-content: center; z-index: 60; padding: 20px; cursor: zoom-out; }
+  .lightbox img { max-width: 90%; max-height: 90%; border-radius: 8px; }
+
+  .loading-note { text-align: center; padding: 40px; color: #6b7280; }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="header">
+    <h1>รายงานผลการจัดกิจกรรมการเรียนรู้<br>ที่เสริมสร้างสมรรถนะความฉลาดรู้ตามแนวทาง PISA</h1>
+    <p>สพป.เชียงใหม่ เขต 2 — แนบภาพ info สรุปกิจกรรม โรงเรียนละ 1 แผ่น (กำหนดส่งภายใน 10 สิงหาคม 2569)</p>
+  </div>
+
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="upload">📤 ส่งภาพกิจกรรม</button>
+    <button class="tab-btn" data-tab="dashboard">📊 แดชบอร์ดสรุปผล</button>
+  </div>
+
+  <!-- ============ UPLOAD TAB ============ -->
+  <div class="tab-panel active" id="tab-upload">
+    <div class="upload-wrap">
+      <div class="card">
+        <label class="field-label">เลือกโรงเรียนของท่าน</label>
+        <select id="schoolSelect">
+          <option value="">-- เลือกโรงเรียน --</option>
+        </select>
+
+        <div id="existingNote"></div>
+        <div id="uploadArea"></div>
+
+        <button class="btn-primary" id="submitBtn" disabled>บันทึกและส่งภาพ</button>
+        <div id="statusMsg"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ DASHBOARD TAB ============ -->
+  <div class="tab-panel" id="tab-dashboard">
+    <div class="stats">
+      <div class="stat sent"><div class="num" id="sentNum">-</div><div class="lbl">ส่งแล้ว</div></div>
+      <div class="stat pending"><div class="num" id="pendingNum">-</div><div class="lbl">ยังไม่ส่ง</div></div>
+      <div class="stat"><div class="num" id="totalNum">-</div><div class="lbl">ทั้งหมด</div></div>
+    </div>
+
+    <div class="progress-bar-wrap"><div class="progress-bar" id="progressBar" style="width:0%"></div></div>
+
+    <div class="deadline-banner ok" id="deadlineBanner">
+      <div class="deadline-left">
+        <div class="deadline-title" id="deadlineTitle">กำหนดส่ง info สรุปกิจกรรม PISA</div>
+        <div class="deadline-date" id="deadlineDate">ภายในวันที่ 10 สิงหาคม 2569</div>
+      </div>
+      <div class="deadline-count" id="deadlineCount">-</div>
+    </div>
+
+    <div class="toolbar">
+      <input class="search" id="searchInput" placeholder="ค้นหาชื่อโรงเรียน...">
+      <button class="filter-btn active" data-filter="all">ทั้งหมด</button>
+      <button class="filter-btn" data-filter="sent">ส่งแล้ว</button>
+      <button class="filter-btn" data-filter="pending">ยังไม่ส่ง</button>
+    </div>
+
+    <div id="gridArea"><div class="loading-note">กำลังโหลดข้อมูล...</div></div>
+  </div>
+</div>
+
+<div id="lightboxRoot"></div>
+
+<script>
+// Replace with your deployed Apps Script Web App URL
+const API_URL = "https://script.google.com/macros/s/AKfycbyuAumitE8TaYt_n1r1MvQIdgPA5cxU-AGJyB3ZM_WP7WG_yKEFjkmtW1n_gqtAAUyOIw/exec";
+const DEADLINE = new Date("2026-08-10T23:59:59+07:00");
+
+const SCHOOLS = [
+"บ้านเมืองกื้ด","บ้านแม่ตะมาน","บ้านบวกหมื้อ","สันป่าสักวิทยา","ร่ำเปิงวิทยา","วัดห้วยไร่","ชุมชนวัดช่อแล","บ้านปางไม้แดง","บ้านเป้าวิทยาคาร","วัดปางมะกล้วย","ป่าแป๋วิทยา","บ้านแม่เลา","บ้านแม่ไคร้","บ้านแม่แสะ","บ้านแม่แมม","บ้านก๋ายน้อย","วัดบ้านเหล่า","วัดแม่กะ","วัดทุ่งหลวง","วัดนาเม็ง","บ้านผึ้ง","บ้านปางฮ่าง","สบเปิงวิทยา","วัดท่าข้าม","บ้านผาหมอน","สันป่ายางวิทยาคาร","สันมหาพนวิทยา","บ้านปางกว้าง","ป่าจี้วังแดงวิทยา","บ้านปง(อินทขิลวิทยาคาร)","บ้านทับเดื่อ","วัดหนองออน","บ้านปางห้วยตาด","บ้านสันคะยอม","บ้านน้ำริน","บ้านพระนอน","บ้านบวกจั่น","เจ้าพ่อหลวงอุปถัมภ์ 7","บ้านโป่งแยงใน","วัดโป่งแยงเฉลิมพระเกียรติ","บ้านกองแหะ","บ้านทุ่งโป่ง","บ้านปางไฮ","เจ้าแม่หลวงอุปถัมภ์ 2","บ้านแม่สา","วัดทรายมูล","บ้านริมใต้","มูลนิธิมหาราช ๕","บ้านสะลวงนอก","บ้านกาดฮาว","บ้านเมืองก๊ะ","บ้านป่าติ้ว","บ้านหนองปลามัน","บ้านต้นผึ้ง","บ้านแมโต๋ สาขาบ้านห้วยเต่า#รร.สาขา .","บ้านห้วยน้ำจาง","บ้านแม่ขะปู","บ้านแม่ยางห้า","บ้านบ่อแก้ว","บ้านแม่โต๋","บ้านแม่ยางห้า สาขาบ้านเด่นฮ่อม#รร.สาขา .","วัดงิ้วเฒ่า","วัดปางเติม","วัดปางเติมสาขาบ้านขุนสาบ#รร.สาขา .","บ้านนากู่","บ้านปางขุม","บ้านแม่แว","วัดยั้งเมิน","บ้านกิ่วเสือ","บ้านแม่ลานคำ สาขาบ้านป่าคานอก#รร.สาขา .","ทรายทองราษฎร์อุทิศ","บ้านแม่ลานคำ","ชุมชนบ้านแม่สาบ","ชุมชนบ้านดง","วัดแม่เลย","บ้านป่าลาน","วัดบ้านป้อก","บ้านห้วยบง","ชุมชนสหกรณ์นิคมวิทยา","สหกรณ์ดำริ","ชุมชนบ้านโป่ง","พร้าวบูรพา","บ้านต้นรุง","บ้านป่าตุ้ม","บ้านป่าไหน่","บ้านสันกลาง","ประชาสามัคคีวิทยา","ประดู่วิทยา","บ้านแม่ปั๋ง","บ้านแม่ปั๋ง สาขาบ้านขุนปั๋ง#รร.สาขา .","บ้านแม่เหียะ","บ้านขุนแจ๋","บ้านแจ่งกู่เรือง","บ้านสันปง","บ้านแม่ปาคี","บ้านหนองปิด","บ้านท่ามะเกี๋ยง","บ้านหลวง","บ้านนาบุญโหล่งขอด","บ้านเมืองขอน","บ้านป่าเหมือด","วัดแม่แก้ดน้อย","บ้านศรีบุญเรือง","บ้านโปง","บ้านหัวฝาย","บ้านหนองมะจับ","บ้านโป่ง","บ้านร่มหลวง","บ้านศรีงาม","บ้านแม่แต","บ้านเจดีย์แม่ครัว","บ้านแม่แฝก","บ้านแม่ย่อย(เจียร-สมศรี  วังทองคำ)","วัดสันคะยอม","วัดสันทรายมูล(มงคลวิทยา)","สันทรายหลวง","บ้านหลักปัน","บ้านป่าก้าง","บ้านสันพระเนตร","บ้านสันศรี","บ้านหนองไคร้","บ้านท่าเกวียน","บ้านห้วยเกี๋ยง","บ้านแม่โจ้","บ้านป่าบง","บ้านหนองหาร (ทิพวันอุทิศ)","บ้านบวกเปา","ชลประทานเขื่อนแม่กวงจิราธิวัฒน์อุปถัมภ์","รัปปาปอร์ต (ตชด.บำรุงที่ ๙๒)"
+].map(n => n.startsWith("โรงเรียน") ? n : "โรงเรียน" + n);
+
+const TWO_SLOT_NAMES = [
+"เจ้าพ่อหลวงอุปถัมภ์ 7","บ้านเมืองกื้ด","บ้านแม่ตะมาน","ร่ำเปิงวิทยา","ชุมชนวัดช่อแล","บ้านปางไม้แดง","บ้านเป้าวิทยาคาร","วัดปางมะกล้วย","ป่าแป๋วิทยา","บ้านแม่ไคร้","วัดบ้านเหล่า","วัดท่าข้าม","สันมหาพนวิทยา","ป่าจี้วังแดงวิทยา","บ้านปง(อินทขิลวิทยาคาร)","บ้านปางห้วยตาด","บ้านสันคะยอม","บ้านทุ่งโป่ง","บ้านแม่สา","บ้านสะลวงนอก","บ้านป่าติ้ว","บ้านหนองปลามัน","บ้านแม่ขะปู","บ้านแม่ยางห้า","บ้านบ่อแก้ว","บ้านแม่โต๋","วัดงิ้วเฒ่า","บ้านปางขุม","บ้านแม่แว","วัดยั้งเมิน","บ้านแม่ลานคำ","บ้านป่าลาน","สหกรณ์ดำริ","ชุมชนบ้านโป่ง","พร้าวบูรพา","บ้านสันกลาง","บ้านแม่ปั๋ง","บ้านแม่เหียะ","บ้านสันปง","บ้านแม่ปาคี","บ้านหนองปิด","บ้านนาบุญโหล่งขอด","บ้านศรีบุญเรือง","บ้านร่มหลวง","บ้านหลักปัน","บ้านแม่โจ้","บ้านบวกเปา","ชลประทานเขื่อนแม่กวงจิราธิวัฒน์อุปถัมภ์","สบเปิงวิทยา","บ้านหนองไคร้","บ้านเจดีย์แม่ครัว","วัดแม่แก้ดน้อย","สันทรายหลวง"
+].map(n => n.startsWith("โรงเรียน") ? n : "โรงเรียน" + n);
+
+const TWO_SLOT_SET = new Set(TWO_SLOT_NAMES);
+function isTwoSlotSchool(s) { return TWO_SLOT_SET.has(s); }
+
+/* ============================================================
+   TAB SWITCHING
+   ============================================================ */
+document.querySelectorAll(".tab-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+    document.querySelectorAll(".tab-panel").forEach(p => p.classList.remove("active"));
+    btn.classList.add("active");
+    document.getElementById("tab-" + btn.dataset.tab).classList.add("active");
+    if (btn.dataset.tab === "dashboard") {
+      loadDashboardData();
+    }
+  });
+});
+
+/* ============================================================
+   UPLOAD TAB LOGIC
+   ============================================================ */
+const schoolSelect = document.getElementById("schoolSelect");
+const uploadArea = document.getElementById("uploadArea");
+const existingNote = document.getElementById("existingNote");
+const submitBtn = document.getElementById("submitBtn");
+const statusMsg = document.getElementById("statusMsg");
+
+SCHOOLS.forEach(s => {
+  const opt = document.createElement("option");
+  opt.value = s;
+  opt.textContent = s;
+  schoolSelect.appendChild(opt);
+});
+
+let pendingFiles = {};
+
+function fileToBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const base64 = reader.result.split(",")[1];
+      resolve({ data: base64, mime: file.type });
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+function renderUploadArea(school) {
+  pendingFiles = {};
+  existingNote.innerHTML = "";
+  statusMsg.innerHTML = "";
+  updateSubmitState();
+
+  if (!school) {
+    uploadArea.innerHTML = "";
+    return;
+  }
+
+  if (isTwoSlotSchool(school)) {
+    uploadArea.innerHTML =
+      '<label class="field-label">แนบภาพ info (ช่องละ 1 แผ่น)</label>' +
+      '<div class="slot-row">' +
+        '<div class="slot-block"><div class="slot-label">ป.4-6</div><div id="slot-p46"></div></div>' +
+        '<div class="slot-block"><div class="slot-label">ม.1-3</div><div id="slot-m13"></div></div>' +
+      '</div>';
+    renderSlotZone("p46");
+    renderSlotZone("m13");
+  } else {
+    uploadArea.innerHTML =
+      '<label class="field-label">แนบภาพ info (1 แผ่น)</label>' +
+      '<div id="slot-single"></div>';
+    renderSlotZone("single");
+  }
+
+  checkExisting(school);
+}
+
+function renderSlotZone(slot) {
+  const container = document.getElementById("slot-" + slot);
+  if (pendingFiles[slot]) {
+    container.innerHTML =
+      '<div class="preview-item">' +
+        '<img src="data:' + pendingFiles[slot].mime + ';base64,' + pendingFiles[slot].data + '">' +
+        '<button class="remove-x" data-slot="' + slot + '">×</button>' +
+      '</div>';
+    container.querySelector(".remove-x").addEventListener("click", () => {
+      delete pendingFiles[slot];
+      renderSlotZone(slot);
+      updateSubmitState();
+    });
+  } else {
+    container.innerHTML =
+      '<label class="upload-zone">คลิกเพื่อเลือกภาพ' +
+        '<input type="file" accept="image/*" style="display:none">' +
+      '</label>';
+    const input = container.querySelector("input");
+    input.addEventListener("change", async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      pendingFiles[slot] = await fileToBase64(file);
+      renderSlotZone(slot);
+      updateSubmitState();
+    });
+  }
+}
+
+function updateSubmitState() {
+  submitBtn.disabled = Object.keys(pendingFiles).length === 0;
+}
+
+async function checkExisting(school) {
+  try {
+    const res = await fetch(API_URL + "?action=status");
+    const data = await res.json();
+    if (!data.ok) return;
+    const entry = data.schools.find(s => s.school === school);
+    if (!entry) return;
+    if (entry.twoSlot) {
+      if (entry.p46 || entry.m13) {
+        existingNote.innerHTML = '<div class="existing-note">โรงเรียนนี้เคยส่งแล้ว: ' +
+          (entry.p46 ? "ป.4-6 ✓ " : "") + (entry.m13 ? "ม.1-3 ✓" : "") +
+          ' — แนบภาพใหม่เพื่ออัปเดต</div>';
+      }
+    } else if (entry.single) {
+      existingNote.innerHTML = '<div class="existing-note">โรงเรียนนี้เคยส่งภาพแล้ว — แนบภาพใหม่เพื่ออัปเดต</div>';
+    }
+  } catch (e) { /* non-blocking */ }
+}
+
+schoolSelect.addEventListener("change", () => renderUploadArea(schoolSelect.value));
+
+submitBtn.addEventListener("click", async () => {
+  const school = schoolSelect.value;
+  if (!school || Object.keys(pendingFiles).length === 0) return;
+
+  submitBtn.disabled = true;
+  statusMsg.innerHTML = '<div class="status-msg loading">กำลังอัปโหลด...</div>';
+
+  try {
+    for (const slot of Object.keys(pendingFiles)) {
+      const f = pendingFiles[slot];
+      const res = await fetch(API_URL, {
+        method: "POST",
+        body: JSON.stringify({
+          action: "upload", school: school, slot: slot,
+          imageBase64: f.data, mimeType: f.mime
+        })
+      });
+      const result = await res.json();
+      if (!result.ok) throw new Error(result.error || "อัปโหลดไม่สำเร็จ");
+    }
+    statusMsg.innerHTML = '<div class="status-msg success">✅ บันทึกสำเร็จ ขอบคุณครับ/ค่ะ</div>';
+    pendingFiles = {};
+    renderUploadArea(school);
+  } catch (err) {
+    statusMsg.innerHTML = '<div class="status-msg error">เกิดข้อผิดพลาด: ' + err.message + '</div>';
+    submitBtn.disabled = false;
+  }
+});
+
+/* ============================================================
+   DASHBOARD TAB LOGIC
+   ============================================================ */
+let allSchoolsData = [];
+let currentFilter = "all";
+let currentSearch = "";
+let dashboardLoadedOnce = false;
+let dashboardInterval = null;
+
+function daysUntil(deadline) {
+  const now = new Date();
+  return Math.ceil((deadline.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+}
+
+function isSent(entry) {
+  if (entry.twoSlot) return !!(entry.p46 || entry.m13);
+  return !!entry.single;
+}
+
+async function loadDashboardData() {
+  try {
+    const res = await fetch(API_URL + "?action=status");
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.error || "โหลดข้อมูลไม่สำเร็จ");
+    allSchoolsData = data.schools;
+    renderDashboard();
+    dashboardLoadedOnce = true;
+    if (!dashboardInterval) {
+      dashboardInterval = setInterval(loadDashboardData, 60000);
+    }
+  } catch (e) {
+    document.getElementById("gridArea").innerHTML =
+      '<div class="loading-note">เกิดข้อผิดพลาดในการโหลดข้อมูล: ' + e.message + '</div>';
+  }
+}
+
+function renderDashboard() {
+  const sent = allSchoolsData.filter(isSent);
+  const pending = allSchoolsData.filter(s => !isSent(s));
+  const total = allSchoolsData.length;
+
+  document.getElementById("sentNum").textContent = sent.length;
+  document.getElementById("pendingNum").textContent = pending.length;
+  document.getElementById("totalNum").textContent = total;
+  document.getElementById("progressBar").style.width = (total ? Math.round(sent.length / total * 100) : 0) + "%";
+
+  const daysLeft = daysUntil(DEADLINE);
+  const banner = document.getElementById("deadlineBanner");
+  banner.className = "deadline-banner";
+  let cls = "ok";
+  if (pending.length === 0) cls = "done";
+  else if (daysLeft <= 3) cls = "urgent";
+  else if (daysLeft <= 7) cls = "warn";
+  banner.classList.add(cls);
+
+  document.getElementById("deadlineTitle").textContent = pending.length === 0
+    ? "ครบทุกโรงเรียนแล้ว 🎉"
+    : "กำหนดส่ง info สรุปกิจกรรม PISA";
+  document.getElementById("deadlineDate").textContent = "ภายในวันที่ 10 สิงหาคม 2569" +
+    (pending.length > 0 ? " — ยังเหลือ " + pending.length + " โรงเรียนที่ยังไม่ส่ง" : "");
+
+  const countEl = document.getElementById("deadlineCount");
+  if (pending.length === 0) {
+    countEl.innerHTML = "✓";
+  } else {
+    const num = daysLeft > 0 ? daysLeft : 0;
+    const unit = daysLeft > 0 ? "วันที่เหลือ" : (daysLeft === 0 ? "วันสุดท้าย" : "เลยกำหนดแล้ว");
+    countEl.innerHTML = num + '<span class="unit">' + unit + '</span>';
+  }
+
+  renderGrid();
+}
+
+function renderGrid() {
+  const gridArea = document.getElementById("gridArea");
+  const filtered = allSchoolsData.filter(entry => {
+    if (currentSearch && !entry.school.includes(currentSearch)) return false;
+    const sent = isSent(entry);
+    if (currentFilter === "sent" && !sent) return false;
+    if (currentFilter === "pending" && sent) return false;
+    return true;
+  });
+
+  if (filtered.length === 0) {
+    gridArea.innerHTML = '<div class="loading-note">ไม่พบโรงเรียนที่ตรงกับเงื่อนไข</div>';
+    return;
+  }
+
+  const html = filtered.map(entry => {
+    const sent = isSent(entry);
+    let countLabel = "";
+    if (entry.twoSlot) {
+      const n = (entry.p46 ? 1 : 0) + (entry.m13 ? 1 : 0);
+      countLabel = n + "/2";
+    } else if (entry.single) {
+      countLabel = "1/1";
+    }
+
+    let thumbsHtml;
+    if (entry.twoSlot) {
+      thumbsHtml =
+        '<div class="thumbs-double">' +
+          '<div class="thumb-col">' +
+            (entry.p46 ? '<img class="thumb-double" src="' + entry.p46.url + '" data-full="' + entry.p46.url + '">' : '<div class="thumb-double thumb-slot"></div>') +
+            '<div class="thumb-label">ป.4-6</div>' +
+          '</div>' +
+          '<div class="thumb-col">' +
+            (entry.m13 ? '<img class="thumb-double" src="' + entry.m13.url + '" data-full="' + entry.m13.url + '">' : '<div class="thumb-double thumb-slot"></div>') +
+            '<div class="thumb-label">ม.1-3</div>' +
+          '</div>' +
+        '</div>';
+    } else {
+      thumbsHtml =
+        '<div class="thumbs-single">' +
+          (entry.single ? '<img src="' + entry.single.url + '" data-full="' + entry.single.url + '">' : '<div class="thumb-slot"></div>') +
+        '</div>';
+    }
+
+    return (
+      '<div class="grid-card">' +
+        '<div class="card-top">' +
+          '<div class="school-name">' + entry.school + '</div>' +
+          '<div class="badge ' + (sent ? "sent" : "pending") + '">' + (sent ? "ส่งแล้ว (" + countLabel + ")" : "ยังไม่ส่ง") + '</div>' +
+        '</div>' +
+        thumbsHtml +
+      '</div>'
+    );
+  }).join("");
+
+  gridArea.innerHTML = '<div class="grid">' + html + '</div>';
+
+  gridArea.querySelectorAll("img[data-full]").forEach(img => {
+    img.style.cursor = "zoom-in";
+    img.addEventListener("click", () => openLightbox(img.dataset.full));
+  });
+}
+
+function openLightbox(url) {
+  const root = document.getElementById("lightboxRoot");
+  root.innerHTML = '<div class="lightbox"><img src="' + url + '"></div>';
+  root.querySelector(".lightbox").addEventListener("click", () => { root.innerHTML = ""; });
+}
+
+document.getElementById("searchInput").addEventListener("input", (e) => {
+  currentSearch = e.target.value;
+  renderGrid();
+});
+
+document.querySelectorAll(".filter-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll(".filter-btn").forEach(b => b.classList.remove("active", "pending-active"));
+    btn.classList.add("active");
+    if (btn.dataset.filter === "pending") btn.classList.add("pending-active");
+    currentFilter = btn.dataset.filter;
+    renderGrid();
+  });
+});
+</script>
+</body>
+</html>
