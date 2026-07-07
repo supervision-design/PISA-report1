@@ -154,6 +154,20 @@
   .thumb-double img, .thumb-double.thumb-slot { width: 100%; aspect-ratio: 1; border-radius: 6px; object-fit: cover; }
   .thumb-label { text-align: center; font-size: 10.5px; color: #6b7280; font-weight: 600; }
 
+  .link-row { display: flex; gap: 8px; }
+  .link-row.single { flex-direction: column; }
+  .link-col { flex: 1; display: flex; flex-direction: column; gap: 4px; align-items: center; }
+  .file-link {
+    display: block; text-align: center; width: 100%;
+    background: var(--moss); color: white; text-decoration: none;
+    padding: 10px 8px; border-radius: 8px; font-size: 13px; font-weight: 600;
+  }
+  .file-link:hover { background: var(--moss-dark); }
+  .file-link-empty {
+    text-align: center; width: 100%; padding: 10px 8px; border-radius: 8px;
+    font-size: 12.5px; color: #9ca3af; background: var(--paper); border: 1px dashed var(--line);
+  }
+
   .lightbox { position: fixed; inset: 0; background: rgba(20,20,20,0.9); display: flex; align-items: center; justify-content: center; z-index: 60; padding: 20px; cursor: zoom-out; }
   .lightbox img { max-width: 90%; max-height: 90%; border-radius: 8px; }
 
@@ -354,12 +368,12 @@ async function checkExisting(school) {
     if (!entry) return;
     if (entry.twoSlot) {
       if (entry.p46 || entry.m13) {
-        existingNote.innerHTML = '<div class="existing-note">โรงเรียนนี้เคยส่งแล้ว: ' +
+        existingNote.innerHTML = '<div class="existing-note">ได้รับข้อมูลของท่านแล้ว: ' +
           (entry.p46 ? "ป.4-6 ✓ " : "") + (entry.m13 ? "ม.1-3 ✓" : "") +
-          ' — แนบภาพใหม่เพื่ออัปเดต</div>';
+          ' — หากต้องการแก้ไขให้แนบภาพใหม่เพื่ออัปเดต</div>';
       }
     } else if (entry.single) {
-      existingNote.innerHTML = '<div class="existing-note">โรงเรียนนี้เคยส่งภาพแล้ว — แนบภาพใหม่เพื่ออัปเดต</div>';
+      existingNote.innerHTML = '<div class="existing-note">ได้รับข้อมูลของท่านแล้ว หากต้องการแก้ไขให้แนบภาพใหม่เพื่ออัปเดต</div>';
     }
   } catch (e) { /* non-blocking */ }
 }
@@ -496,20 +510,26 @@ function renderGrid() {
     let thumbsHtml;
     if (entry.twoSlot) {
       thumbsHtml =
-        '<div class="thumbs-double">' +
-          '<div class="thumb-col">' +
-            (entry.p46 ? '<img class="thumb-double" src="' + entry.p46.url + '" data-full="' + entry.p46.url + '">' : '<div class="thumb-double thumb-slot"></div>') +
+        '<div class="link-row">' +
+          '<div class="link-col">' +
             '<div class="thumb-label">ป.4-6</div>' +
+            (entry.p46
+              ? '<a class="file-link" href="' + entry.p46.url + '" target="_blank" rel="noopener noreferrer">📄 เปิดดูไฟล์</a>'
+              : '<div class="file-link-empty">ยังไม่ส่ง</div>') +
           '</div>' +
-          '<div class="thumb-col">' +
-            (entry.m13 ? '<img class="thumb-double" src="' + entry.m13.url + '" data-full="' + entry.m13.url + '">' : '<div class="thumb-double thumb-slot"></div>') +
+          '<div class="link-col">' +
             '<div class="thumb-label">ม.1-3</div>' +
+            (entry.m13
+              ? '<a class="file-link" href="' + entry.m13.url + '" target="_blank" rel="noopener noreferrer">📄 เปิดดูไฟล์</a>'
+              : '<div class="file-link-empty">ยังไม่ส่ง</div>') +
           '</div>' +
         '</div>';
     } else {
       thumbsHtml =
-        '<div class="thumbs-single">' +
-          (entry.single ? '<img src="' + entry.single.url + '" data-full="' + entry.single.url + '">' : '<div class="thumb-slot"></div>') +
+        '<div class="link-row single">' +
+          (entry.single
+            ? '<a class="file-link" href="' + entry.single.url + '" target="_blank" rel="noopener noreferrer">📄 เปิดดูไฟล์</a>'
+            : '<div class="file-link-empty">ยังไม่ส่ง</div>') +
         '</div>';
     }
 
@@ -525,11 +545,6 @@ function renderGrid() {
   }).join("");
 
   gridArea.innerHTML = '<div class="grid">' + html + '</div>';
-
-  gridArea.querySelectorAll("img[data-full]").forEach(img => {
-    img.style.cursor = "zoom-in";
-    img.addEventListener("click", () => openLightbox(img.dataset.full));
-  });
 }
 
 function openLightbox(url) {
